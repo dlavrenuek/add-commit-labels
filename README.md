@@ -6,6 +6,16 @@ This GitHub action reads the git history, extract issue/PR ids from commit messa
 specified labels to these issues and pull requests. Can be used in combination with other actions to f.e. add version
 labels to all issues that were included in a release.
 
+To identify which issues will be labeled following steps are performed:
+
+1. Git commit messages are retrieved using `${from}...${to}`
+2. Issue/PR ids are extracted from commit messages (excluding commit body) using `/#[0-9]*/g`
+3. For every extracted id - if a pull request is found it will be loaded and issue ids are extracted from PR body using
+   the same format as in step 3
+4. Given labels are added to all issues and pull requests identified in steps 2 and 3
+
+The issue ids are first extracted from commit messages (only the first line, not full commit bodies).
+
 ## Example Usage
 
 This example adds the labels `super` and `duper` to all issues/PRs found in git history from `v1.0.0` to HEAD
