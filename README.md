@@ -26,7 +26,7 @@ steps:
     with:
       fetch-depth: 0
 
-  - uses: dlavrenuek/cadd-commit-labels@v1.0.0
+  - uses: dlavrenuek/add-commit-labels@v1.0.0
     with:
       from: v1.0.0
       to: HEAD
