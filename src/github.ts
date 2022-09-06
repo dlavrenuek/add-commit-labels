@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest';
-import github from '@actions/github';
+import { context } from '@actions/github';
 import { info } from '@actions/core';
 import pLimit from 'p-limit';
 
@@ -13,7 +13,7 @@ export const loadPullRequests = async (ids: number[]) =>
         requestLimit(async () => {
           try {
             const pr = await octokit.pulls.get({
-              ...github.context.repo,
+              ...context.repo,
               pull_number: id,
             });
 
@@ -39,7 +39,7 @@ export const ensureLabelsExist = async (labels: string[], color: string) =>
       requestLimit(async () => {
         try {
           await octokit.issues.createLabel({
-            ...github.context.repo,
+            ...context.repo,
             color,
             name,
           });
@@ -55,7 +55,7 @@ export const addLabels = async (issueIds: number[], labels: string[]) =>
     issueIds.map((id) =>
       requestLimit(() =>
         octokit.issues.addLabels({
-          ...github.context.repo,
+          ...context.repo,
           issue_number: id,
           labels,
         })
