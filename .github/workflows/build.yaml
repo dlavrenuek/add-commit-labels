@@ -14,8 +14,7 @@ jobs:
       - name: Build code
         run: yarn build
 
-      - name: Commit and push
-        run: |
-          git add dist/*
-          git commit -m "chore: build distribution"
-          git push
+      - name: Commit and push changes
+        uses: actions-js/push@v1.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
