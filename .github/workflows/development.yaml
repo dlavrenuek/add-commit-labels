@@ -1,6 +1,8 @@
 name: Development
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
