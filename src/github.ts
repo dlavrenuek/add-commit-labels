@@ -4,7 +4,6 @@ import { info } from '@actions/core';
 import pLimit from 'p-limit';
 
 const octokit = new Octokit({ auth: `token ${process.env.GITHUB_TOKEN}` });
-const { owner, repo } = github.context.repo;
 const requestLimit = pLimit(10);
 
 export const loadPullRequests = async (ids: number[]) =>
@@ -14,8 +13,7 @@ export const loadPullRequests = async (ids: number[]) =>
         requestLimit(async () => {
           try {
             const pr = await octokit.pulls.get({
-              owner,
-              repo,
+              ...github.context.repo,
               pull_number: id,
             });
 
@@ -41,8 +39,7 @@ export const ensureLabelsExist = async (labels: string[], color: string) =>
       requestLimit(async () => {
         try {
           await octokit.issues.createLabel({
-            owner,
-            repo,
+            ...github.context.repo,
             color,
             name,
           });
@@ -58,8 +55,7 @@ export const addLabels = async (issueIds: number[], labels: string[]) =>
     issueIds.map((id) =>
       requestLimit(() =>
         octokit.issues.addLabels({
-          owner,
-          repo,
+          ...github.context.repo,
           issue_number: id,
           labels,
         })
