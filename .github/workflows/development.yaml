@@ -1,0 +1,24 @@
+name: Development
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check formatting
+        run: yarn test:format
+
+      - name: Lint code
+        run: yarn test:lint
+
+      - name: Unit tests
+        run: yarn test:unit
+
+      - name: Build code
+        run: yarn build
+
