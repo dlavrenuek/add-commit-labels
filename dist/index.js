@@ -17911,6 +17911,17 @@ function wrappy (fn, cb) {
 
 "use strict";
 
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -17953,11 +17964,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.addLabels = exports.ensureLabelsExist = exports.loadPullRequests = void 0;
 var rest_1 = __nccwpck_require__(5375);
-var github_1 = __importDefault(__nccwpck_require__(5438));
+var github_1 = __nccwpck_require__(5438);
 var core_1 = __nccwpck_require__(2186);
 var p_limit_1 = __importDefault(__nccwpck_require__(3783));
 var octokit = new rest_1.Octokit({ auth: "token " + process.env.GITHUB_TOKEN });
-var _a = github_1.default.context.repo, owner = _a.owner, repo = _a.repo;
 var requestLimit = p_limit_1.default(10);
 var loadPullRequests = function (ids) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
@@ -17969,11 +17979,7 @@ var loadPullRequests = function (ids) { return __awaiter(void 0, void 0, void 0,
                             switch (_a.label) {
                                 case 0:
                                     _a.trys.push([0, 2, , 3]);
-                                    return [4 /*yield*/, octokit.pulls.get({
-                                            owner: owner,
-                                            repo: repo,
-                                            pull_number: id,
-                                        })];
+                                    return [4 /*yield*/, octokit.pulls.get(__assign(__assign({}, github_1.context.repo), { pull_number: id }))];
                                 case 1:
                                     pr = _a.sent();
                                     if (pr.status !== 200) {
@@ -18003,12 +18009,7 @@ var ensureLabelsExist = function (labels, color) { return __awaiter(void 0, void
                         switch (_a.label) {
                             case 0:
                                 _a.trys.push([0, 2, , 3]);
-                                return [4 /*yield*/, octokit.issues.createLabel({
-                                        owner: owner,
-                                        repo: repo,
-                                        color: color,
-                                        name: name,
-                                    })];
+                                return [4 /*yield*/, octokit.issues.createLabel(__assign(__assign({}, github_1.context.repo), { color: color || undefined, name: name }))];
                             case 1:
                                 _a.sent();
                                 return [3 /*break*/, 3];
@@ -18028,12 +18029,7 @@ var addLabels = function (issueIds, labels) { return __awaiter(void 0, void 0, v
     return __generator(this, function (_a) {
         return [2 /*return*/, Promise.all(issueIds.map(function (id) {
                 return requestLimit(function () {
-                    return octokit.issues.addLabels({
-                        owner: owner,
-                        repo: repo,
-                        issue_number: id,
-                        labels: labels,
-                    });
+                    return octokit.issues.addLabels(__assign(__assign({}, github_1.context.repo), { issue_number: id, labels: labels }));
                 });
             }))];
     });
@@ -18119,7 +18115,8 @@ var run = function () { return __awaiter(void 0, void 0, void 0, function () {
                 labels = core_1.getInput('labels')
                     .split(',')
                     .map(function (label) { return label.trim(); })
-                    .filter(function (label) { return label.length > 0; });
+                    .filter(function (label) { return label.length > 0; })
+                    .filter(utils_1.uniqueFilter);
                 return [4 /*yield*/, utils_1.default(from, to)];
             case 1:
                 commits = _a.sent();
@@ -18135,9 +18132,9 @@ var run = function () { return __awaiter(void 0, void 0, void 0, function () {
                 // create labels
                 _a.sent();
                 // add labels to all issues and prs
+                core_1.info("Adding labels \"" + labels.join('", "') + "\" to following issues and PRs: " + ids.join(', '));
                 return [4 /*yield*/, github_1.addLabels(ids, labels)];
             case 4:
-                // add labels to all issues and prs
                 _a.sent();
                 return [3 /*break*/, 6];
             case 5:
