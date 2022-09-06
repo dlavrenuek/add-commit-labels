@@ -1,14 +1,19 @@
 name: Development
 
 on:
+  push:
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install
+        run: yarn install --frozen-lockfile
 
       - name: Check formatting
         run: yarn test:format
@@ -21,4 +26,3 @@ jobs:
 
       - name: Build code
         run: yarn build
-

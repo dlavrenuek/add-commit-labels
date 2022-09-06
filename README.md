@@ -28,11 +28,11 @@ steps:
 Inputs available through `with`:
 
 | Input  | Description                                                                      | Required |
-|--------|----------------------------------------------------------------------------------| ------- |
-| from   | Commit SHA, tag or reference as starting point                                   | ✔       |
-| to     | Commit SHA, tag or reference as ending point                                     | ✔       |
-| labels | Labels that should be added to issues/PRs. Non-existing labels will be created   | ✔       |
-| color  | Color for newly created labels. If not specified GitHub will pick a random color |         |
+| ------ | -------------------------------------------------------------------------------- | -------- |
+| from   | Commit SHA, tag or reference as starting point                                   | ✔        |
+| to     | Commit SHA, tag or reference as ending point                                     | ✔        |
+| labels | Labels that should be added to issues/PRs. Non-existing labels will be created   | ✔        |
+| color  | Color for newly created labels. If not specified GitHub will pick a random color |          |
 
 ### Complete workflow
 
