@@ -2,9 +2,9 @@ name: Development
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -23,4 +23,3 @@ jobs:
 
       - name: Build code
         run: yarn build
-
