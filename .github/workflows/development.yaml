@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Install
         run: yarn install --frozen-lockfile
@@ -26,3 +28,12 @@ jobs:
 
       - name: Build code
         run: yarn build
+
+      - name: Integration test
+        uses: ./
+        with:
+          from: 735d1768f09567d1b067bfdc952b2e7e44174dfe
+          to: 167440d0a93f955597713d0bd0a0e986b1cd6564
+          labels: first-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
