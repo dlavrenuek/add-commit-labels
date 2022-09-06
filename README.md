@@ -1,6 +1,6 @@
 # Add labels to issues and PRs based on git history
 
-<a href="https://github.com/dlavrenuek/add-commit-labels/actions"><img alt="javscript-action status" src="https://github.com/dlavrenuek/add-commit-labels/workflows/development/badge.svg"></a>
+<a href="https://github.com/dlavrenuek/add-commit-labels/actions"><img alt="javscript-action status" src="https://github.com/dlavrenuek/add-commit-labels/actions/workflows/development.yaml/badge.svg"></a>
 
 This GitHub action reads the git history, extract issue/PR ids from commit messages and PR descriptions and adds the
 specified labels to these issues and pull requests. Can be used in combination with other actions to f.e. add version
