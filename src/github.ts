@@ -40,7 +40,7 @@ export const ensureLabelsExist = async (labels: string[], color: string) =>
         try {
           await octokit.issues.createLabel({
             ...context.repo,
-            color,
+            color: color || undefined,
             name,
           });
         } catch (e) {

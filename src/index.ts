@@ -10,7 +10,8 @@ const run = async () => {
     const labels = getInput('labels')
       .split(',')
       .map((label) => label.trim())
-      .filter((label) => label.length > 0);
+      .filter((label) => label.length > 0)
+      .filter(uniqueFilter);
 
     // get all commits
     const commits = await gitCommits(from, to);
