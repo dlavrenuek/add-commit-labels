@@ -28,21 +28,28 @@ steps:
 
   - uses: dlavrenuek/add-commit-labels@1.0.0
     with:
-      from: v1.0.0
+      # Commit SHA, tag or reference as starting point (excluded from history)
+      from: 1.0.0
+      # Commit SHA, tag or reference as ending point (included in history)
       to: HEAD
+      # Comma separated labels that should be added to issues/PRs. Non-existing labels will be created
       labels: super, duper
+      # Color for newly created labels. If not specified GitHub will pick a random color
+      color: aa55aa
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ### Input Variables
 
 Inputs available through `with`:
 
-| Input  | Description                                                                      | Required |
-| ------ | -------------------------------------------------------------------------------- | -------- |
-| from   | Commit SHA, tag or reference as starting point                                   | ✔        |
-| to     | Commit SHA, tag or reference as ending point                                     | ✔        |
-| labels | Labels that should be added to issues/PRs. Non-existing labels will be created   | ✔        |
-| color  | Color for newly created labels. If not specified GitHub will pick a random color |          |
+| Input  | Description                                                                                    | Required |
+| ------ | ---------------------------------------------------------------------------------------------- | -------- |
+| from   | Commit SHA, tag or reference as starting point (excluded from history)                         | ✔        |
+| to     | Commit SHA, tag or reference as ending point (included in history)                             | ✔        |
+| labels | Comma separated labels that should be added to issues/PRs. Non-existing labels will be created | ✔        |
+| color  | Color for newly created labels. If not specified GitHub will pick a random color               |          |
 
 ### Complete workflow
 
