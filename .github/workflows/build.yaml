@@ -1,3 +1,5 @@
+name: Build distribution
+
 on:
   push:
     branches: [main]
