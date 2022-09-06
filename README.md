@@ -22,7 +22,7 @@ This example adds the labels `super` and `duper` to all issues/PRs found in git 
 
 ```yaml
 steps:
-  - uses: actions/checkout@v2
+  - uses: actions/checkout@v3
     with:
       fetch-depth: 0
 
