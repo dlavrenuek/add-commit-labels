@@ -12,7 +12,9 @@ const api = graphql.defaults({
   },
 });
 const octokit = new Octokit({ auth: `token ${process.env.GITHUB_TOKEN}` });
-const requestLimit = pLimit(10);
+// limit of 1 will make requests sequential to avoid secondary request limits
+// ref: https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
+const requestLimit = pLimit(1);
 
 const logApiError = (message: string, error: unknown) => {
   info(message);
@@ -38,10 +40,11 @@ export const loadIssueReferences = async (ids: number[]): Promise<number[]> => {
   };
 
   const references = await Promise.all(
-    ids.map(async (id) => {
-      try {
-        const { repository } = await api<IssueReferenceResponse>(
-          `
+    ids.map((id) =>
+      requestLimit(async () => {
+        try {
+          const { repository } = await api<IssueReferenceResponse>(
+            `
             query IssueReference($owner: String!, $repo: String!, $id: Int!){
               repository(name: $repo, owner: $owner) {
                 pullRequest(number: $id) {
@@ -53,23 +56,24 @@ export const loadIssueReferences = async (ids: number[]): Promise<number[]> => {
                 }
               }
             }`,
-          {
-            repo,
-            owner,
-            id,
-          }
-        );
+            {
+              repo,
+              owner,
+              id,
+            }
+          );
 
-        return (
-          repository?.pullRequest?.closingIssuesReferences?.nodes.map(
-            ({ number }) => number
-          ) || []
-        );
-      } catch (error) {
-        logApiError(`Retrieving pull request with id "${id}" failed`, error);
-        return [];
-      }
-    })
+          return (
+            repository?.pullRequest?.closingIssuesReferences?.nodes.map(
+              ({ number }) => number
+            ) || []
+          );
+        } catch (error) {
+          logApiError(`Retrieving pull request with id "${id}" failed`, error);
+          return [];
+        }
+      })
+    )
   );
 
   return ([] as number[]).concat(...references).filter(uniqueFilter);
