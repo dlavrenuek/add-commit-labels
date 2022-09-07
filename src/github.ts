@@ -80,14 +80,20 @@ export const ensureLabelsExist = async (labels: string[], color: string) =>
     labels.map((name) =>
       requestLimit(async () => {
         try {
+          await octokit.issues.getLabel({
+            repo,
+            owner,
+            name,
+          });
+        } catch (e) {
+          info(`Label "${name}" does not exist and will be created`);
+
           await octokit.issues.createLabel({
             repo,
             owner,
             color: color || undefined,
             name,
           });
-        } catch (e) {
-          info(`Label ${name} could not be created, reason: ${e}`);
         }
       })
     )

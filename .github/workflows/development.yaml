@@ -35,7 +35,8 @@ jobs:
         with:
           from: 735d1768f09567d1b067bfdc952b2e7e44174dfe
           to: 167440d0a93f955597713d0bd0a0e986b1cd6564
-          labels: graphql-release
+          labels: integration-test-label
+          color: aaaa00
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
