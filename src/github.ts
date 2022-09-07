@@ -1,37 +1,79 @@
+import { graphql, GraphqlResponseError } from '@octokit/graphql';
 import { Octokit } from '@octokit/rest';
 import { context } from '@actions/github';
 import { info } from '@actions/core';
 import pLimit from 'p-limit';
+import { uniqueFilter } from './utils';
 
+const { repo, owner } = context.repo;
+const api = graphql.defaults({
+  headers: {
+    authorization: `token ${process.env.GITHUB_TOKEN}`,
+  },
+});
 const octokit = new Octokit({ auth: `token ${process.env.GITHUB_TOKEN}` });
 const requestLimit = pLimit(10);
 
-export const loadPullRequests = async (ids: number[]) =>
-  (
-    await Promise.all(
-      ids.map((id) =>
-        requestLimit(async () => {
-          try {
-            const pr = await octokit.pulls.get({
-              ...context.repo,
-              pull_number: id,
-            });
+const logApiError = (message: string, error: unknown) => {
+  info(message);
 
-            if (pr.status !== 200) {
-              return null;
-            }
+  if (error instanceof GraphqlResponseError) {
+    info(`Error message: ${error.message}`);
+  } else {
+    info(`Error message: ${error}`);
+  }
+};
 
-            return pr.data.body;
-          } catch (e) {
-            info(
-              `Retrieving pull request with id "${id}" failed with the message: ${e}`
-            );
-            return null;
+export const loadIssueReferences = async (ids: number[]): Promise<number[]> => {
+  type IssueReferenceResponse = {
+    repository?: {
+      pullRequest?: {
+        closingIssuesReferences?: {
+          nodes: {
+            number: number;
+          }[];
+        };
+      };
+    };
+  };
+
+  const references = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const { repository } = await api<IssueReferenceResponse>(
+          `
+            query IssueReference($owner: String!, $repo: String!, $id: Int!){
+              repository(name: $repo, owner: $owner) {
+                pullRequest(number: $id) {
+                  closingIssuesReferences(first: 20) {
+                    nodes {
+                      number
+                    }
+                  }
+                }
+              }
+            }`,
+          {
+            repo,
+            owner,
+            id,
           }
-        })
-      )
-    )
-  ).filter((pr): pr is string => pr !== null);
+        );
+
+        return (
+          repository?.pullRequest?.closingIssuesReferences?.nodes.map(
+            ({ number }) => number
+          ) || []
+        );
+      } catch (error) {
+        logApiError(`Retrieving pull request with id "${id}" failed`, error);
+        return [];
+      }
+    })
+  );
+
+  return ([] as number[]).concat(...references).filter(uniqueFilter);
+};
 
 export const ensureLabelsExist = async (labels: string[], color: string) =>
   Promise.all(
@@ -39,7 +81,8 @@ export const ensureLabelsExist = async (labels: string[], color: string) =>
       requestLimit(async () => {
         try {
           await octokit.issues.createLabel({
-            ...context.repo,
+            repo,
+            owner,
             color: color || undefined,
             name,
           });
@@ -55,7 +98,8 @@ export const addLabels = async (issueIds: number[], labels: string[]) =>
     issueIds.map((id) =>
       requestLimit(() =>
         octokit.issues.addLabels({
-          ...context.repo,
+          repo,
+          owner,
           issue_number: id,
           labels,
         })

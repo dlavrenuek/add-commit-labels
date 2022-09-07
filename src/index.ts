@@ -1,6 +1,6 @@
-import { getInput, info, setFailed } from '@actions/core';
+import { getInput, info, setFailed, setOutput } from '@actions/core';
 import gitCommits, { extractIssueIds, uniqueFilter } from './utils';
-import { addLabels, ensureLabelsExist, loadPullRequests } from './github';
+import { addLabels, ensureLabelsExist, loadIssueReferences } from './github';
 
 const run = async () => {
   try {
@@ -20,8 +20,7 @@ const run = async () => {
     const prIds = extractIssueIds(commits);
 
     // gather all issues/pr ids from pr bodies
-    const prs = await loadPullRequests(prIds);
-    const issueIds = extractIssueIds(prs);
+    const issueIds = await loadIssueReferences(prIds);
     const ids = prIds.concat(issueIds).filter(uniqueFilter);
 
     // create labels
@@ -34,6 +33,8 @@ const run = async () => {
       )}" to following issues and PRs: ${ids.join(', ')}`
     );
     await addLabels(ids, labels);
+
+    setOutput('issues', JSON.stringify(ids));
   } catch (error) {
     setFailed(error.message);
   }
