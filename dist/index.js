@@ -17965,7 +17965,9 @@ var api = graphql_1.graphql.defaults({
     },
 });
 var octokit = new rest_1.Octokit({ auth: "token " + process.env.GITHUB_TOKEN });
-var requestLimit = p_limit_1.default(10);
+// limit of 1 will make requests sequential to avoid secondary request limits
+// ref: https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
+var requestLimit = p_limit_1.default(1);
 var logApiError = function (message, error) {
     core_1.info(message);
     if (error instanceof graphql_1.GraphqlResponseError) {
@@ -17980,32 +17982,34 @@ var loadIssueReferences = function (ids) { return __awaiter(void 0, void 0, void
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
-            case 0: return [4 /*yield*/, Promise.all(ids.map(function (id) { return __awaiter(void 0, void 0, void 0, function () {
-                    var repository, error_1;
-                    var _a, _b;
-                    return __generator(this, function (_c) {
-                        switch (_c.label) {
-                            case 0:
-                                _c.trys.push([0, 2, , 3]);
-                                return [4 /*yield*/, api("\n            query IssueReference($owner: String!, $repo: String!, $id: Int!){\n              repository(name: $repo, owner: $owner) {\n                pullRequest(number: $id) {\n                  closingIssuesReferences(first: 20) {\n                    nodes {\n                      number\n                    }\n                  }\n                }\n              }\n            }", {
-                                        repo: repo,
-                                        owner: owner,
-                                        id: id,
-                                    })];
-                            case 1:
-                                repository = (_c.sent()).repository;
-                                return [2 /*return*/, (((_b = (_a = repository === null || repository === void 0 ? void 0 : repository.pullRequest) === null || _a === void 0 ? void 0 : _a.closingIssuesReferences) === null || _b === void 0 ? void 0 : _b.nodes.map(function (_a) {
-                                        var number = _a.number;
-                                        return number;
-                                    })) || [])];
-                            case 2:
-                                error_1 = _c.sent();
-                                logApiError("Retrieving pull request with id \"" + id + "\" failed", error_1);
-                                return [2 /*return*/, []];
-                            case 3: return [2 /*return*/];
-                        }
-                    });
-                }); }))];
+            case 0: return [4 /*yield*/, Promise.all(ids.map(function (id) {
+                    return requestLimit(function () { return __awaiter(void 0, void 0, void 0, function () {
+                        var repository, error_1;
+                        var _a, _b;
+                        return __generator(this, function (_c) {
+                            switch (_c.label) {
+                                case 0:
+                                    _c.trys.push([0, 2, , 3]);
+                                    return [4 /*yield*/, api("\n            query IssueReference($owner: String!, $repo: String!, $id: Int!){\n              repository(name: $repo, owner: $owner) {\n                pullRequest(number: $id) {\n                  closingIssuesReferences(first: 20) {\n                    nodes {\n                      number\n                    }\n                  }\n                }\n              }\n            }", {
+                                            repo: repo,
+                                            owner: owner,
+                                            id: id,
+                                        })];
+                                case 1:
+                                    repository = (_c.sent()).repository;
+                                    return [2 /*return*/, (((_b = (_a = repository === null || repository === void 0 ? void 0 : repository.pullRequest) === null || _a === void 0 ? void 0 : _a.closingIssuesReferences) === null || _b === void 0 ? void 0 : _b.nodes.map(function (_a) {
+                                            var number = _a.number;
+                                            return number;
+                                        })) || [])];
+                                case 2:
+                                    error_1 = _c.sent();
+                                    logApiError("Retrieving pull request with id \"" + id + "\" failed", error_1);
+                                    return [2 /*return*/, []];
+                                case 3: return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                }))];
             case 1:
                 references = _b.sent();
                 return [2 /*return*/, (_a = []).concat.apply(_a, references).filter(utils_1.uniqueFilter)];
