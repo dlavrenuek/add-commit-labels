@@ -7056,7 +7056,7 @@ const Endpoints = {
   }
 };
 
-const VERSION = "6.4.0";
+const VERSION = "6.4.1";
 
 function endpointsToMethods(octokit, endpointsMap) {
   const newMethods = {};
@@ -17911,17 +17911,6 @@ function wrappy (fn, cb) {
 
 "use strict";
 
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -17962,62 +17951,98 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addLabels = exports.ensureLabelsExist = exports.loadPullRequests = void 0;
+exports.addLabels = exports.ensureLabelsExist = exports.loadIssueReferences = void 0;
+var graphql_1 = __nccwpck_require__(8467);
 var rest_1 = __nccwpck_require__(5375);
 var github_1 = __nccwpck_require__(5438);
 var core_1 = __nccwpck_require__(2186);
 var p_limit_1 = __importDefault(__nccwpck_require__(3783));
+var utils_1 = __nccwpck_require__(1314);
+var _a = github_1.context.repo, repo = _a.repo, owner = _a.owner;
+var api = graphql_1.graphql.defaults({
+    headers: {
+        authorization: "token " + process.env.GITHUB_TOKEN,
+    },
+});
 var octokit = new rest_1.Octokit({ auth: "token " + process.env.GITHUB_TOKEN });
 var requestLimit = p_limit_1.default(10);
-var loadPullRequests = function (ids) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, Promise.all(ids.map(function (id) {
-                    return requestLimit(function () { return __awaiter(void 0, void 0, void 0, function () {
-                        var pr, e_1;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    _a.trys.push([0, 2, , 3]);
-                                    return [4 /*yield*/, octokit.pulls.get(__assign(__assign({}, github_1.context.repo), { pull_number: id }))];
-                                case 1:
-                                    pr = _a.sent();
-                                    if (pr.status !== 200) {
-                                        return [2 /*return*/, null];
-                                    }
-                                    return [2 /*return*/, pr.data.body];
-                                case 2:
-                                    e_1 = _a.sent();
-                                    core_1.info("Retrieving pull request with id \"" + id + "\" failed with the message: " + e_1);
-                                    return [2 /*return*/, null];
-                                case 3: return [2 /*return*/];
-                            }
-                        });
-                    }); });
-                }))];
-            case 1: return [2 /*return*/, (_a.sent()).filter(function (pr) { return pr !== null; })];
+var logApiError = function (message, error) {
+    core_1.info(message);
+    if (error instanceof graphql_1.GraphqlResponseError) {
+        core_1.info("Error message: " + error.message);
+    }
+    else {
+        core_1.info("Error message: " + error);
+    }
+};
+var loadIssueReferences = function (ids) { return __awaiter(void 0, void 0, void 0, function () {
+    var references;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0: return [4 /*yield*/, Promise.all(ids.map(function (id) { return __awaiter(void 0, void 0, void 0, function () {
+                    var repository, error_1;
+                    var _a, _b;
+                    return __generator(this, function (_c) {
+                        switch (_c.label) {
+                            case 0:
+                                _c.trys.push([0, 2, , 3]);
+                                return [4 /*yield*/, api("\n            query IssueReference($owner: String!, $repo: String!, $id: Int!){\n              repository(name: $repo, owner: $owner) {\n                pullRequest(number: $id) {\n                  closingIssuesReferences(first: 20) {\n                    nodes {\n                      number\n                    }\n                  }\n                }\n              }\n            }", {
+                                        repo: repo,
+                                        owner: owner,
+                                        id: id,
+                                    })];
+                            case 1:
+                                repository = (_c.sent()).repository;
+                                return [2 /*return*/, (((_b = (_a = repository === null || repository === void 0 ? void 0 : repository.pullRequest) === null || _a === void 0 ? void 0 : _a.closingIssuesReferences) === null || _b === void 0 ? void 0 : _b.nodes.map(function (_a) {
+                                        var number = _a.number;
+                                        return number;
+                                    })) || [])];
+                            case 2:
+                                error_1 = _c.sent();
+                                logApiError("Retrieving pull request with id \"" + id + "\" failed", error_1);
+                                return [2 /*return*/, []];
+                            case 3: return [2 /*return*/];
+                        }
+                    });
+                }); }))];
+            case 1:
+                references = _b.sent();
+                return [2 /*return*/, (_a = []).concat.apply(_a, references).filter(utils_1.uniqueFilter)];
         }
     });
 }); };
-exports.loadPullRequests = loadPullRequests;
+exports.loadIssueReferences = loadIssueReferences;
 var ensureLabelsExist = function (labels, color) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         return [2 /*return*/, Promise.all(labels.map(function (name) {
                 return requestLimit(function () { return __awaiter(void 0, void 0, void 0, function () {
-                    var e_2;
+                    var e_1;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
-                                _a.trys.push([0, 2, , 3]);
-                                return [4 /*yield*/, octokit.issues.createLabel(__assign(__assign({}, github_1.context.repo), { color: color || undefined, name: name }))];
+                                _a.trys.push([0, 2, , 4]);
+                                return [4 /*yield*/, octokit.issues.getLabel({
+                                        repo: repo,
+                                        owner: owner,
+                                        name: name,
+                                    })];
                             case 1:
                                 _a.sent();
-                                return [3 /*break*/, 3];
+                                return [3 /*break*/, 4];
                             case 2:
-                                e_2 = _a.sent();
-                                core_1.info("Label " + name + " could not be created, reason: " + e_2);
-                                return [3 /*break*/, 3];
-                            case 3: return [2 /*return*/];
+                                e_1 = _a.sent();
+                                core_1.info("Label \"" + name + "\" does not exist and will be created");
+                                return [4 /*yield*/, octokit.issues.createLabel({
+                                        repo: repo,
+                                        owner: owner,
+                                        color: color || undefined,
+                                        name: name,
+                                    })];
+                            case 3:
+                                _a.sent();
+                                return [3 /*break*/, 4];
+                            case 4: return [2 /*return*/];
                         }
                     });
                 }); });
@@ -18029,7 +18054,12 @@ var addLabels = function (issueIds, labels) { return __awaiter(void 0, void 0, v
     return __generator(this, function (_a) {
         return [2 /*return*/, Promise.all(issueIds.map(function (id) {
                 return requestLimit(function () {
-                    return octokit.issues.addLabels(__assign(__assign({}, github_1.context.repo), { issue_number: id, labels: labels }));
+                    return octokit.issues.addLabels({
+                        repo: repo,
+                        owner: owner,
+                        issue_number: id,
+                        labels: labels,
+                    });
                 });
             }))];
     });
@@ -18104,7 +18134,7 @@ var core_1 = __nccwpck_require__(2186);
 var utils_1 = __importStar(__nccwpck_require__(1314));
 var github_1 = __nccwpck_require__(978);
 var run = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var from, to, color, labels, commits, prIds, prs, issueIds, ids, error_1;
+    var from, to, color, labels, commits, prIds, issueIds, ids, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -18121,10 +18151,9 @@ var run = function () { return __awaiter(void 0, void 0, void 0, function () {
             case 1:
                 commits = _a.sent();
                 prIds = utils_1.extractIssueIds(commits);
-                return [4 /*yield*/, github_1.loadPullRequests(prIds)];
+                return [4 /*yield*/, github_1.loadIssueReferences(prIds)];
             case 2:
-                prs = _a.sent();
-                issueIds = utils_1.extractIssueIds(prs);
+                issueIds = _a.sent();
                 ids = prIds.concat(issueIds).filter(utils_1.uniqueFilter);
                 // create labels
                 return [4 /*yield*/, github_1.ensureLabelsExist(labels, color)];
@@ -18136,6 +18165,7 @@ var run = function () { return __awaiter(void 0, void 0, void 0, function () {
                 return [4 /*yield*/, github_1.addLabels(ids, labels)];
             case 4:
                 _a.sent();
+                core_1.setOutput('issues', JSON.stringify(ids));
                 return [3 /*break*/, 6];
             case 5:
                 error_1 = _a.sent();
