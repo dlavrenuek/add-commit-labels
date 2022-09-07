@@ -30,10 +30,23 @@ jobs:
         run: yarn build
 
       - name: Integration test
+        id: integration
         uses: ./
         with:
           from: 735d1768f09567d1b067bfdc952b2e7e44174dfe
           to: 167440d0a93f955597713d0bd0a0e986b1cd6564
-          labels: first-release
+          labels: integration-test-label
+          color: aaaa00
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compare integration step output
+        run: |
+          # Use toJSON(fromJSON(...)) to ensure the same formatting
+          expected="${{ toJSON(fromJSON('[5, 4, 3]')) }}"
+          result="${{ toJSON(fromJSON(steps.integration.outputs.issues)) }}"
+          if [ "$expected" != "$result" ]; then
+            echo "Expected to get $expected";
+            echo "but got $result";
+            exit 1;
+          fi

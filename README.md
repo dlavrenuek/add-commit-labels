@@ -2,19 +2,20 @@
 
 <a href="https://github.com/dlavrenuek/add-commit-labels/actions"><img alt="javscript-action status" src="https://github.com/dlavrenuek/add-commit-labels/actions/workflows/development.yaml/badge.svg"></a>
 
-This GitHub action reads the git history, extract issue/PR ids from commit messages and PR descriptions and adds the
-specified labels to these issues and pull requests. Can be used in combination with other actions to f.e. add version
-labels to all issues that were included in a release.
+This GitHub action reads the git history, extract issue/PR ids from commit messages and PR closing references and adds
+the specified labels to these issues and pull requests. Can be used in combination with other actions to f.e. add
+version labels to all issues that were included in a release.
 
 To identify which issues will be labeled following steps are performed:
 
 1. Git commit messages are retrieved using `${from}...${to}`
 2. Issue/PR ids are extracted from commit messages (excluding commit body) using `/#[0-9]*/g`
-3. For every extracted id - if a pull request is found it will be loaded and issue ids are extracted from PR body using
-   the same format as in step 3
+3. For every extracted id - if a pull request is found, its closing issue references will be loaded\*
 4. Given labels are added to all issues and pull requests identified in steps 2 and 3
 
 The issue ids are first extracted from commit messages (only the first line, not full commit bodies).
+
+\*Only the first 20 closing issue references for every pull request will be retrieved.
 
 ## Example Usage
 
@@ -26,7 +27,7 @@ steps:
     with:
       fetch-depth: 0
 
-  - uses: dlavrenuek/add-commit-labels@1.0.0
+  - uses: dlavrenuek/add-commit-labels@1.0.1
     with:
       # Commit SHA, tag or reference as starting point (excluded from history)
       from: 1.0.0
@@ -34,7 +35,7 @@ steps:
       to: HEAD
       # Comma separated labels that should be added to issues/PRs. Non-existing labels will be created
       labels: super, duper
-      # Color for newly created labels. If not specified GitHub will pick a random color
+      # Color for newly created labels (optional, RGB hex format without leading `#`)
       color: aa55aa
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,10 +52,13 @@ Inputs available through `with`:
 | labels | Comma separated labels that should be added to issues/PRs. Non-existing labels will be created | ✔        |
 | color  | Color for newly created labels. If not specified GitHub will pick a random color               |          |
 
-### Complete workflow
+### Output Variables
 
-A complete workflow for creating a draft release can be
-found [here](https://github.com/dlavrenuek/add-commit-labels/blob/master/.github/workflows/release.yml).
+Output available through the step's `outputs`:
+
+| Output | Description                                                                |
+| ------ | -------------------------------------------------------------------------- |
+| issues | Issue and PR ids in JSON format that were labeled. Example: [65, 102, 115] |
 
 ## Contribute
 

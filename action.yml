@@ -16,9 +16,12 @@ inputs:
     description: 'Comma separated labels that will be added to all PRs and related issues'
     required: true
   color:
-    description: 'The hexadecimal color code for new labels, without the leading `#`.'
+    description: 'The hexadecimal color code for new labels, without the leading `#`. Example: ff00ff'
     required: false
-    default: ''
+    default: 'aaaaaa'
+outputs:
+  issues:
+    description: 'Issue ids in JSON format that were labeled. Example: [2, 3, 10, 12]'
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
