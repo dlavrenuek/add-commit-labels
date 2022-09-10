@@ -2,10 +2,10 @@ import simpleGit from 'simple-git';
 
 const git = simpleGit();
 
-export const uniqueFilter = <T>(value: T, index: number, self: T[]) =>
+export const uniqueFilter = <T>(value: T, index: number, self: T[]): boolean =>
   self.indexOf(value) === index;
 
-export const extractIssueIds = (messages: string[]) =>
+export const extractIssueIds = (messages: string[]): number[] =>
   ([] as number[])
     .concat(
       ...messages.map(
@@ -19,7 +19,10 @@ export const extractIssueIds = (messages: string[]) =>
     )
     .filter(uniqueFilter);
 
-export default async function gitCommits(from: string, to: string) {
+export default async function gitCommits(
+  from: string,
+  to: string
+): Promise<string[]> {
   const log = await git.log({
     from,
     to,

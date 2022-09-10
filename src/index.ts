@@ -36,7 +36,11 @@ const run = async () => {
 
     setOutput('issues', JSON.stringify(ids));
   } catch (error) {
-    setFailed(error.message);
+    if (error instanceof Error) {
+      setFailed(error);
+    } else {
+      setFailed(`${error}`);
+    }
   }
 };
 
