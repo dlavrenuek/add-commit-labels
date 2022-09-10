@@ -79,7 +79,10 @@ export const loadIssueReferences = async (ids: number[]): Promise<number[]> => {
   return ([] as number[]).concat(...references).filter(uniqueFilter);
 };
 
-export const ensureLabelsExist = async (labels: string[], color: string) =>
+export const ensureLabelsExist = async (
+  labels: string[],
+  color: string
+): Promise<void[]> =>
   Promise.all(
     labels.map((name) =>
       requestLimit(async () => {
@@ -103,7 +106,10 @@ export const ensureLabelsExist = async (labels: string[], color: string) =>
     )
   );
 
-export const addLabels = async (issueIds: number[], labels: string[]) =>
+export const addLabels = async (
+  issueIds: number[],
+  labels: string[]
+): Promise<unknown[]> =>
   Promise.all(
     issueIds.map((id) =>
       requestLimit(() =>
