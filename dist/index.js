@@ -10933,7 +10933,7 @@ var init_task_options = __esm({
 function callTaskParser(parser3, streams) {
   return parser3(streams.stdOut, streams.stdErr);
 }
-function parseStringResponse(result, parsers11, texts, trim = true) {
+function parseStringResponse(result, parsers12, texts, trim = true) {
   asArray(texts).forEach((text) => {
     for (let lines = toLinesWithContent(text, trim), i = 0, max = lines.length; i < max; i++) {
       const line = (offset = 0) => {
@@ -10942,7 +10942,7 @@ function parseStringResponse(result, parsers11, texts, trim = true) {
         }
         return lines[i + offset];
       };
-      parsers11.some(({ parse }) => parse(line, result));
+      parsers12.some(({ parse }) => parse(line, result));
     }
   });
   return result;
@@ -13315,7 +13315,7 @@ function versionResponse(major = 0, minor = 0, patch = 0, agent = "", installed 
     installed
   }, "toString", {
     value() {
-      return `${major}.${minor}.${patch}`;
+      return `${this.major}.${this.minor}.${this.patch}`;
     },
     configurable: false,
     enumerable: false
@@ -13330,16 +13330,7 @@ function version_default() {
       return this._runTask({
         commands: ["--version"],
         format: "utf-8",
-        parser(stdOut) {
-          if (stdOut === NOT_INSTALLED) {
-            return notInstalledResponse();
-          }
-          const version = /version (\d+)\.(\d+)\.(\d+)(?:\s*\((.+)\))?/.exec(stdOut);
-          if (!version) {
-            return versionResponse(0, 0, 0, stdOut);
-          }
-          return versionResponse(asNumber(version[1]), asNumber(version[2]), asNumber(version[3]), version[4] || "");
-        },
+        parser: versionParser,
         onError(result, error, done, fail) {
           if (result.exitCode === -2 /* NOT_FOUND */) {
             return done(Buffer.from(NOT_INSTALLED));
@@ -13350,11 +13341,25 @@ function version_default() {
     }
   };
 }
-var NOT_INSTALLED;
+function versionParser(stdOut) {
+  if (stdOut === NOT_INSTALLED) {
+    return notInstalledResponse();
+  }
+  return parseStringResponse(versionResponse(0, 0, 0, stdOut), parsers7, stdOut);
+}
+var NOT_INSTALLED, parsers7;
 var init_version = __esm({
   "src/lib/tasks/version.ts"() {
     init_utils();
     NOT_INSTALLED = "installed=false";
+    parsers7 = [
+      new LineParser(/version (\d+)\.(\d+)\.(\d+)(?:\s*\((.+)\))?/, (result, [major, minor, patch, agent = ""]) => {
+        Object.assign(result, versionResponse(asNumber(major), asNumber(minor), asNumber(patch), agent));
+      }),
+      new LineParser(/version (\d+)\.(\d+)\.(\D+)(.+)?$/, (result, [major, minor, patch, agent = ""]) => {
+        Object.assign(result, versionResponse(asNumber(major), asNumber(minor), patch, agent));
+      })
+    ];
   }
 });
 
@@ -13549,14 +13554,14 @@ var init_BranchDeleteSummary = __esm({
 function hasBranchDeletionError(data, processExitCode) {
   return processExitCode === 1 /* ERROR */ && deleteErrorRegex.test(data);
 }
-var deleteSuccessRegex, deleteErrorRegex, parsers7, parseBranchDeletions;
+var deleteSuccessRegex, deleteErrorRegex, parsers8, parseBranchDeletions;
 var init_parse_branch_delete = __esm({
   "src/lib/parsers/parse-branch-delete.ts"() {
     init_BranchDeleteSummary();
     init_utils();
     deleteSuccessRegex = /(\S+)\s+\(\S+\s([^)]+)\)/;
     deleteErrorRegex = /^error[^']+'([^']+)'/m;
-    parsers7 = [
+    parsers8 = [
       new LineParser(deleteSuccessRegex, (result, [branch, hash]) => {
         const deletion = branchDeletionSuccess(branch, hash);
         result.all.push(deletion);
@@ -13570,7 +13575,7 @@ var init_parse_branch_delete = __esm({
       })
     ];
     parseBranchDeletions = (stdOut, stdErr) => {
-      return parseStringResponse(new BranchDeletionBatch(), parsers7, [stdOut, stdErr]);
+      return parseStringResponse(new BranchDeletionBatch(), parsers8, [stdOut, stdErr]);
     };
   }
 });
@@ -13609,14 +13614,14 @@ function branchStatus(input) {
   return input ? input.charAt(0) : "";
 }
 function parseBranchSummary(stdOut) {
-  return parseStringResponse(new BranchSummaryResult(), parsers8, stdOut);
+  return parseStringResponse(new BranchSummaryResult(), parsers9, stdOut);
 }
-var parsers8;
+var parsers9;
 var init_parse_branch = __esm({
   "src/lib/parsers/parse-branch.ts"() {
     init_BranchSummary();
     init_utils();
-    parsers8 = [
+    parsers9 = [
       new LineParser(/^([*+]\s)?\((?:HEAD )?detached (?:from|at) (\S+)\)\s+([a-z0-9]+)\s(.*)$/, (result, [current, name, commit, label]) => {
         result.push(branchStatus(current), true, name, commit, label);
       }),
@@ -13776,13 +13781,13 @@ function parseFetchResult(stdOut, stdErr) {
     updated: [],
     deleted: []
   };
-  return parseStringResponse(result, parsers9, [stdOut, stdErr]);
+  return parseStringResponse(result, parsers10, [stdOut, stdErr]);
 }
-var parsers9;
+var parsers10;
 var init_parse_fetch = __esm({
   "src/lib/parsers/parse-fetch.ts"() {
     init_utils();
-    parsers9 = [
+    parsers10 = [
       new LineParser(/From (.+)$/, (result, [remote]) => {
         result.remote = remote;
       }),
@@ -13847,13 +13852,13 @@ var init_fetch = __esm({
 
 // src/lib/parsers/parse-move.ts
 function parseMoveResult(stdOut) {
-  return parseStringResponse({ moves: [] }, parsers10, stdOut);
+  return parseStringResponse({ moves: [] }, parsers11, stdOut);
 }
-var parsers10;
+var parsers11;
 var init_parse_move = __esm({
   "src/lib/parsers/parse-move.ts"() {
     init_utils();
-    parsers10 = [
+    parsers11 = [
       new LineParser(/^Renaming (.+) to (.+)$/, (result, [from, to]) => {
         result.moves.push({ from, to });
       })
