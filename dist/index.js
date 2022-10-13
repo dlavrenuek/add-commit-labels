@@ -5148,7 +5148,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 var request = __nccwpck_require__(6234);
 var universalUserAgent = __nccwpck_require__(5030);
 
-const VERSION = "5.0.2";
+const VERSION = "5.0.3";
 
 function _buildMessageForResponseErrors(data) {
   return `Request failed due to following response errors:\n` + data.errors.map(e => ` - ${e.message}`).join("\n");
@@ -5228,8 +5228,8 @@ function graphql(request, query, options) {
   });
 }
 
-function withDefaults(request$1, newDefaults) {
-  const newRequest = request$1.defaults(newDefaults);
+function withDefaults(request, newDefaults) {
+  const newRequest = request.defaults(newDefaults);
 
   const newApi = (query, options) => {
     return graphql(newRequest, query, options);
@@ -5237,7 +5237,7 @@ function withDefaults(request$1, newDefaults) {
 
   return Object.assign(newApi, {
     defaults: withDefaults.bind(null, newRequest),
-    endpoint: request.request.endpoint
+    endpoint: newRequest.endpoint
   });
 }
 
