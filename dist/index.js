@@ -11053,7 +11053,7 @@ var init_abort_plugin = __esm({
 
 // src/lib/plugins/block-unsafe-operations-plugin.ts
 function isConfigSwitch(arg) {
-  return arg.trim().toLowerCase() === "-c";
+  return typeof arg === "string" && arg.trim().toLowerCase() === "-c";
 }
 function preventProtocolOverride(arg, next) {
   if (!isConfigSwitch(arg)) {
