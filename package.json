@@ -31,7 +31,7 @@
     "@octokit/graphql": "5.0.4",
     "@octokit/rest": "19.0.5",
     "p-limit": "4.0.0",
-    "simple-git": "3.15.1"
+    "simple-git": "3.16.0"
   },
   "devDependencies": {
     "@babel/core": "7.20.12",
