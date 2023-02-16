@@ -12605,7 +12605,7 @@ var init_parse_push = __esm({
           local
         });
       }),
-      new LineParser(/^[*-=]\s+([^:]+):(\S+)\s+\[(.+)]$/, (result, [local, remote, type]) => {
+      new LineParser(/^[=*-]\s+([^:]+):(\S+)\s+\[(.+)]$/, (result, [local, remote, type]) => {
         result.pushed.push(pushResultPushedItem(local, remote, type));
       }),
       new LineParser(/^Branch '([^']+)' set up to track remote branch '([^']+)' from '([^']+)'/, (result, [local, remote, remoteName]) => {
