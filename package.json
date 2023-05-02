@@ -34,7 +34,7 @@
     "simple-git": "3.18.0"
   },
   "devDependencies": {
-    "@babel/core": "7.21.5",
+    "@babel/core": "7.21.8",
     "@babel/preset-env": "7.21.5",
     "@babel/preset-typescript": "7.21.5",
     "@types/jest": "29.5.1",
