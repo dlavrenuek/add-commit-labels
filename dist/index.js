@@ -6964,18 +6964,16 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // pkg/dist-src/index.js
 var dist_src_exports = {};
 __export(dist_src_exports, {
-  Octokit: () => Octokit,
-  RestEndpointMethodTypes: () => import_plugin_rest_endpoint_methods2.RestEndpointMethodTypes
+  Octokit: () => Octokit
 });
 module.exports = __toCommonJS(dist_src_exports);
 var import_core = __nccwpck_require__(6762);
 var import_plugin_request_log = __nccwpck_require__(8883);
 var import_plugin_paginate_rest = __nccwpck_require__(4193);
 var import_plugin_rest_endpoint_methods = __nccwpck_require__(3044);
-var import_plugin_rest_endpoint_methods2 = __nccwpck_require__(3044);
 
 // pkg/dist-src/version.js
-var VERSION = "19.0.9";
+var VERSION = "19.0.10";
 
 // pkg/dist-src/index.js
 var Octokit = import_core.Octokit.plugin(
