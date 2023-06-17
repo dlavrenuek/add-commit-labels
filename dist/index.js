@@ -5338,7 +5338,7 @@ __export(dist_src_exports, {
 module.exports = __toCommonJS(dist_src_exports);
 
 // pkg/dist-src/version.js
-var VERSION = "7.1.2";
+var VERSION = "6.1.2";
 
 // pkg/dist-src/normalize-paginated-list-response.js
 function normalizePaginatedListResponse(response) {
@@ -5505,7 +5505,6 @@ var paginatingEndpoints = [
   "GET /orgs/{org}/projects",
   "GET /orgs/{org}/public_members",
   "GET /orgs/{org}/repos",
-  "GET /orgs/{org}/rulesets",
   "GET /orgs/{org}/secret-scanning/alerts",
   "GET /orgs/{org}/teams",
   "GET /orgs/{org}/teams/{team_slug}/discussions",
@@ -5595,8 +5594,6 @@ var paginatingEndpoints = [
   "GET /repos/{owner}/{repo}/releases",
   "GET /repos/{owner}/{repo}/releases/{release_id}/assets",
   "GET /repos/{owner}/{repo}/releases/{release_id}/reactions",
-  "GET /repos/{owner}/{repo}/rules/branches/{branch}",
-  "GET /repos/{owner}/{repo}/rulesets",
   "GET /repos/{owner}/{repo}/secret-scanning/alerts",
   "GET /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}/locations",
   "GET /repos/{owner}/{repo}/security-advisories",
@@ -7261,7 +7258,7 @@ var import_plugin_paginate_rest = __nccwpck_require__(4193);
 var import_plugin_rest_endpoint_methods = __nccwpck_require__(3044);
 
 // pkg/dist-src/version.js
-var VERSION = "19.0.12";
+var VERSION = "19.0.13";
 
 // pkg/dist-src/index.js
 var Octokit = import_core.Octokit.plugin(
