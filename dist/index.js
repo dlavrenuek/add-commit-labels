@@ -11787,20 +11787,23 @@ function suffixPathsPlugin() {
     type: "spawn.args",
     action(data) {
       const prefix = [];
-      const suffix = [];
+      let suffix;
+      function append2(args) {
+        (suffix = suffix || []).push(...args);
+      }
       for (let i = 0; i < data.length; i++) {
         const param = data[i];
         if (isPathSpec(param)) {
-          suffix.push(...toPaths(param));
+          append2(toPaths(param));
           continue;
         }
         if (param === "--") {
-          suffix.push(...data.slice(i + 1).flatMap((item) => isPathSpec(item) && toPaths(item) || item));
+          append2(data.slice(i + 1).flatMap((item) => isPathSpec(item) && toPaths(item) || item));
           break;
         }
         prefix.push(param);
       }
-      return !suffix.length ? prefix : [...prefix, "--", ...suffix.map(String)];
+      return !suffix ? prefix : [...prefix, "--", ...suffix.map(String)];
     }
   };
 }
