@@ -34,9 +34,9 @@
     "simple-git": "3.19.1"
   },
   "devDependencies": {
-    "@babel/core": "7.22.10",
+    "@babel/core": "7.22.11",
     "@babel/preset-env": "7.22.10",
-    "@babel/preset-typescript": "7.22.5",
+    "@babel/preset-typescript": "7.22.11",
     "@types/jest": "29.5.4",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
