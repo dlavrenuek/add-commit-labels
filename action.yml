@@ -23,5 +23,5 @@ outputs:
   issues:
     description: 'Issue ids in JSON format that were labeled. Example: [2, 3, 10, 12]'
 runs:
-  using: 'node18'
+  using: 'node20'
   main: 'dist/index.js'
