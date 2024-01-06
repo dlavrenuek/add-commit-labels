@@ -47,9 +47,9 @@ Inputs available through `with`:
 
 | Input  | Description                                                                                    | Required |
 | ------ | ---------------------------------------------------------------------------------------------- | -------- |
-| from   | Commit SHA, tag or reference as starting point (excluded from history)                         | ✔        |
-| to     | Commit SHA, tag or reference as ending point (included in history)                             | ✔        |
-| labels | Comma separated labels that should be added to issues/PRs. Non-existing labels will be created | ✔        |
+| from   | Commit SHA, tag or reference as starting point (excluded from history)                         | ✔       |
+| to     | Commit SHA, tag or reference as ending point (included in history)                             | ✔       |
+| labels | Comma separated labels that should be added to issues/PRs. Non-existing labels will be created | ✔       |
 | color  | Color for newly created labels. If not specified GitHub will pick a random color               |          |
 
 ### Output Variables
