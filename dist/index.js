@@ -10834,6 +10834,51 @@ var init_completion_detection_plugin = __esm({
   }
 });
 
+// src/lib/plugins/custom-binary.plugin.ts
+function isBadArgument(arg) {
+  return !arg || !/^([a-z]:)?([a-z0-9/.\\_-]+)$/i.test(arg);
+}
+function toBinaryConfig(input, allowUnsafe) {
+  if (input.length < 1 || input.length > 2) {
+    throw new GitPluginError(void 0, "binary", WRONG_NUMBER_ERR);
+  }
+  const isBad = input.some(isBadArgument);
+  if (isBad) {
+    if (allowUnsafe) {
+      console.warn(WRONG_CHARS_ERR);
+    } else {
+      throw new GitPluginError(void 0, "binary", WRONG_CHARS_ERR);
+    }
+  }
+  const [binary, prefix] = input;
+  return {
+    binary,
+    prefix
+  };
+}
+function customBinaryPlugin(plugins, input = ["git"], allowUnsafe = false) {
+  let config = toBinaryConfig(asArray(input), allowUnsafe);
+  plugins.on("binary", (input2) => {
+    config = toBinaryConfig(asArray(input2), allowUnsafe);
+  });
+  plugins.append("spawn.binary", () => {
+    return config.binary;
+  });
+  plugins.append("spawn.args", (data) => {
+    return config.prefix ? [config.prefix, ...data] : data;
+  });
+}
+var WRONG_NUMBER_ERR, WRONG_CHARS_ERR;
+var init_custom_binary_plugin = __esm({
+  "src/lib/plugins/custom-binary.plugin.ts"() {
+    "use strict";
+    init_git_plugin_error();
+    init_utils();
+    WRONG_NUMBER_ERR = `Invalid value supplied for custom binary, requires a single string or an array containing either one or two strings`;
+    WRONG_CHARS_ERR = `Invalid value supplied for custom binary, restricted characters must be removed or supply the unsafe.allowUnsafeCustomBinary option`;
+  }
+});
+
 // src/lib/plugins/error-detection.plugin.ts
 function isTaskError(result) {
   return !!(result.exitCode && result.stdErr.length);
@@ -10875,14 +10920,26 @@ var init_error_detection_plugin = __esm({
 });
 
 // src/lib/plugins/plugin-store.ts
-var PluginStore;
+var import_node_events, PluginStore;
 var init_plugin_store = __esm({
   "src/lib/plugins/plugin-store.ts"() {
     "use strict";
+    import_node_events = __nccwpck_require__(5673);
     init_utils();
     PluginStore = class {
       constructor() {
         this.plugins = /* @__PURE__ */ new Set();
+        this.events = new import_node_events.EventEmitter();
+      }
+      on(type, listener) {
+        this.events.on(type, listener);
+      }
+      reconfigure(type, data) {
+        this.events.emit(type, data);
+      }
+      append(type, action) {
+        const plugin = append(this.plugins, { type, action });
+        return () => this.plugins.delete(plugin);
       }
       add(plugin) {
         const plugins = [];
@@ -11028,6 +11085,7 @@ var init_plugins = __esm({
     init_block_unsafe_operations_plugin();
     init_command_config_prefixing_plugin();
     init_completion_detection_plugin();
+    init_custom_binary_plugin();
     init_error_detection_plugin();
     init_plugin_store();
     init_progress_monitor_plugin();
@@ -11249,9 +11307,6 @@ var init_git_executor_chain = __esm({
         this._chain = Promise.resolve();
         this._queue = new TasksPendingQueue();
       }
-      get binary() {
-        return this._executor.binary;
-      }
       get cwd() {
         return this._cwd || this._executor.cwd;
       }
@@ -11294,6 +11349,7 @@ var init_git_executor_chain = __esm({
       }
       attemptRemoteTask(task, logger) {
         return __async(this, null, function* () {
+          const binary = this._plugins.exec("spawn.binary", "", pluginContext(task, task.commands));
           const args = this._plugins.exec(
             "spawn.args",
             [...task.commands],
@@ -11301,7 +11357,7 @@ var init_git_executor_chain = __esm({
           );
           const raw = yield this.gitResponse(
             task,
-            this.binary,
+            binary,
             args,
             this.outputHandler,
             logger.step("SPAWN")
@@ -11450,8 +11506,7 @@ var init_git_executor = __esm({
     "use strict";
     init_git_executor_chain();
     GitExecutor = class {
-      constructor(binary = "git", cwd, _scheduler, _plugins) {
-        this.binary = binary;
+      constructor(cwd, _scheduler, _plugins) {
         this.cwd = cwd;
         this._scheduler = _scheduler;
         this._plugins = _plugins;
@@ -13782,8 +13837,8 @@ var require_git = __commonJS({
     var { addAnnotatedTagTask: addAnnotatedTagTask2, addTagTask: addTagTask2, tagListTask: tagListTask2 } = (init_tag(), __toCommonJS(tag_exports));
     var { straightThroughBufferTask: straightThroughBufferTask2, straightThroughStringTask: straightThroughStringTask2 } = (init_task(), __toCommonJS(task_exports));
     function Git2(options, plugins) {
+      this._plugins = plugins;
       this._executor = new GitExecutor2(
-        options.binary,
         options.baseDir,
         new Scheduler2(options.maxConcurrentProcesses),
         plugins
@@ -13792,7 +13847,7 @@ var require_git = __commonJS({
     }
     (Git2.prototype = Object.create(SimpleGitApi2.prototype)).constructor = Git2;
     Git2.prototype.customBinary = function(command) {
-      this._executor.binary = command;
+      this._plugins.reconfigure("binary", command);
       return this;
     };
     Git2.prototype.env = function(name, value) {
@@ -14126,6 +14181,7 @@ function gitExportFactory(factory) {
   return Object.assign(factory.bind(null), api_exports);
 }
 function gitInstanceFactory(baseDir, options) {
+  var _a2;
   const plugins = new PluginStore();
   const config = createInstanceConfig(
     baseDir && (typeof baseDir === "string" ? { baseDir } : baseDir) || {},
@@ -14149,6 +14205,7 @@ function gitInstanceFactory(baseDir, options) {
   config.spawnOptions && plugins.add(spawnOptionsPlugin(config.spawnOptions));
   plugins.add(errorDetectionPlugin(errorDetectionHandler(true)));
   config.errors && plugins.add(errorDetectionPlugin(config.errors));
+  customBinaryPlugin(plugins, config.binary, (_a2 = config.unsafe) == null ? void 0 : _a2.allowUnsafeCustomBinary);
   return new Git(config, plugins);
 }
 var Git;
