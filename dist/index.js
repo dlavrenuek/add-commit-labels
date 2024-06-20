@@ -41709,6 +41709,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.extractIssueIds = exports.uniqueFilter = void 0;
+exports["default"] = gitCommits;
 var simple_git_1 = __importDefault(__nccwpck_require__(9103));
 var git = (0, simple_git_1.default)();
 var uniqueFilter = function (value, index, self) {
@@ -41744,7 +41745,6 @@ function gitCommits(from, to) {
         });
     });
 }
-exports["default"] = gitCommits;
 
 
 /***/ }),
