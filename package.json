@@ -30,7 +30,7 @@
     "@actions/github": "6.0.0",
     "@octokit/graphql": "8.2.1",
     "@octokit/rest": "21.1.1",
-    "p-limit": "4.0.0",
+    "p-limit": "6.2.0",
     "simple-git": "3.27.0"
   },
   "devDependencies": {
