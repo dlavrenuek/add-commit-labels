@@ -44148,7 +44148,8 @@ __nccwpck_require__.r(__webpack_exports__);
 
 // EXPORTS
 __nccwpck_require__.d(__webpack_exports__, {
-  "default": () => (/* binding */ pLimit)
+  "default": () => (/* binding */ pLimit),
+  limitFunction: () => (/* binding */ limitFunction)
 });
 
 ;// CONCATENATED MODULE: ./node_modules/yocto-queue/index.js
@@ -44200,6 +44201,17 @@ class Queue {
 		return current.value;
 	}
 
+	peek() {
+		if (!this.#head) {
+			return;
+		}
+
+		return this.#head.value;
+
+		// TODO: Node.js 18.
+		// return this.#head?.value;
+	}
+
 	clear() {
 		this.#head = undefined;
 		this.#tail = undefined;
@@ -44224,25 +44236,27 @@ class Queue {
 
 
 function pLimit(concurrency) {
-	if (!((Number.isInteger(concurrency) || concurrency === Number.POSITIVE_INFINITY) && concurrency > 0)) {
-		throw new TypeError('Expected `concurrency` to be a number from 1 and up');
-	}
+	validateConcurrency(concurrency);
 
 	const queue = new Queue();
 	let activeCount = 0;
 
-	const next = () => {
-		activeCount--;
-
-		if (queue.size > 0) {
+	const resumeNext = () => {
+		if (activeCount < concurrency && queue.size > 0) {
 			queue.dequeue()();
+			// Since `pendingCount` has been decreased by one, increase `activeCount` by one.
+			activeCount++;
 		}
 	};
 
-	const run = async (fn, resolve, args) => {
-		activeCount++;
+	const next = () => {
+		activeCount--;
 
-		const result = (async () => fn(...args))();
+		resumeNext();
+	};
+
+	const run = async (function_, resolve, arguments_) => {
+		const result = (async () => function_(...arguments_))();
 
 		resolve(result);
 
@@ -44253,24 +44267,30 @@ function pLimit(concurrency) {
 		next();
 	};
 
-	const enqueue = (fn, resolve, args) => {
-		queue.enqueue(run.bind(undefined, fn, resolve, args));
+	const enqueue = (function_, resolve, arguments_) => {
+		// Queue `internalResolve` instead of the `run` function
+		// to preserve asynchronous context.
+		new Promise(internalResolve => {
+			queue.enqueue(internalResolve);
+		}).then(
+			run.bind(undefined, function_, resolve, arguments_),
+		);
 
 		(async () => {
 			// This function needs to wait until the next microtask before comparing
 			// `activeCount` to `concurrency`, because `activeCount` is updated asynchronously
-			// when the run function is dequeued and called. The comparison in the if-statement
+			// after the `internalResolve` function is dequeued and called. The comparison in the if-statement
 			// needs to happen asynchronously as well to get an up-to-date value for `activeCount`.
 			await Promise.resolve();
 
-			if (activeCount < concurrency && queue.size > 0) {
-				queue.dequeue()();
+			if (activeCount < concurrency) {
+				resumeNext();
 			}
 		})();
 	};
 
-	const generator = (fn, ...args) => new Promise(resolve => {
-		enqueue(fn, resolve, args);
+	const generator = (function_, ...arguments_) => new Promise(resolve => {
+		enqueue(function_, resolve, arguments_);
 	});
 
 	Object.defineProperties(generator, {
@@ -44281,13 +44301,41 @@ function pLimit(concurrency) {
 			get: () => queue.size,
 		},
 		clearQueue: {
-			value: () => {
+			value() {
 				queue.clear();
+			},
+		},
+		concurrency: {
+			get: () => concurrency,
+
+			set(newConcurrency) {
+				validateConcurrency(newConcurrency);
+				concurrency = newConcurrency;
+
+				queueMicrotask(() => {
+					// eslint-disable-next-line no-unmodified-loop-condition
+					while (activeCount < concurrency && queue.size > 0) {
+						resumeNext();
+					}
+				});
 			},
 		},
 	});
 
 	return generator;
+}
+
+function limitFunction(function_, option) {
+	const {concurrency} = option;
+	const limit = pLimit(concurrency);
+
+	return (...arguments_) => limit(() => function_(...arguments_));
+}
+
+function validateConcurrency(concurrency) {
+	if (!((Number.isInteger(concurrency) || concurrency === Number.POSITIVE_INFINITY) && concurrency > 0)) {
+		throw new TypeError('Expected `concurrency` to be a number from 1 and up');
+	}
 }
 
 
