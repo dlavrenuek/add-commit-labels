@@ -1,4 +1,4 @@
-import simpleGit from 'simple-git';
+import simpleGit from "simple-git";
 
 const git = simpleGit();
 
@@ -13,15 +13,15 @@ export const extractIssueIds = (messages: string[]): number[] =>
           message
             .match(/#[0-9]*/g)
             ?.map((id) => id.substring(1))
-            .map((id) => parseInt(id))
-            .filter((id) => !isNaN(id)) || []
-      )
+            .map((id) => Number.parseInt(id))
+            .filter((id) => !Number.isNaN(id)) || [],
+      ),
     )
     .filter(uniqueFilter);
 
 export default async function gitCommits(
   from: string,
-  to: string
+  to: string,
 ): Promise<string[]> {
   const log = await git.log({
     from,

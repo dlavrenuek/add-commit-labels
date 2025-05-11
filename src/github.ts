@@ -1,9 +1,9 @@
-import { graphql, GraphqlResponseError } from '@octokit/graphql';
-import { Octokit } from '@octokit/rest';
-import { context } from '@actions/github';
-import { info } from '@actions/core';
-import pLimit from 'p-limit';
-import { uniqueFilter } from './utils';
+import { info } from "@actions/core";
+import { context } from "@actions/github";
+import { GraphqlResponseError, graphql } from "@octokit/graphql";
+import { Octokit } from "@octokit/rest";
+import pLimit from "p-limit";
+import { uniqueFilter } from "./utils";
 
 const { repo, owner } = context.repo;
 const api = graphql.defaults({
@@ -60,20 +60,20 @@ export const loadIssueReferences = async (ids: number[]): Promise<number[]> => {
               repo,
               owner,
               id,
-            }
+            },
           );
 
           return (
             repository?.pullRequest?.closingIssuesReferences?.nodes.map(
-              ({ number }) => number
+              ({ number }) => number,
             ) || []
           );
         } catch (error) {
           logApiError(`Retrieving pull request with id "${id}" failed`, error);
           return [];
         }
-      })
-    )
+      }),
+    ),
   );
 
   return ([] as number[]).concat(...references).filter(uniqueFilter);
@@ -81,9 +81,9 @@ export const loadIssueReferences = async (ids: number[]): Promise<number[]> => {
 
 export const ensureLabelsExist = async (
   labels: string[],
-  color: string
-): Promise<void[]> =>
-  Promise.all(
+  color: string,
+): Promise<void> => {
+  await Promise.all(
     labels.map((name) =>
       requestLimit(async () => {
         try {
@@ -102,13 +102,14 @@ export const ensureLabelsExist = async (
             name,
           });
         }
-      })
-    )
+      }),
+    ),
   );
+};
 
 export const addLabels = async (
   issueIds: number[],
-  labels: string[]
+  labels: string[],
 ): Promise<unknown[]> =>
   Promise.all(
     issueIds.map((id) =>
@@ -118,7 +119,7 @@ export const addLabels = async (
           owner,
           issue_number: id,
           labels,
-        })
-      )
-    )
+        }),
+      ),
+    ),
   );
