@@ -14,20 +14,28 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
       - name: Install
-        run: yarn install --frozen-lockfile
+        run: pnpm i --frozen-lockfile
 
-      - name: Check formatting
-        run: yarn test:format
-
-      - name: Lint code
-        run: yarn test:lint
+      - name: Check formatting and lint code
+        run: pnpm test:check
 
       - name: Unit tests
-        run: yarn test:unit
+        run: pnpm test:unit
 
       - name: Build code
-        run: yarn build
+        run: pnpm build
 
       - name: Integration test
         id: integration

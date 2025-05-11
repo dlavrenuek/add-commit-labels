@@ -1,14 +1,14 @@
-import { getInput, info, setFailed, setOutput } from '@actions/core';
-import gitCommits, { extractIssueIds, uniqueFilter } from './utils';
-import { addLabels, ensureLabelsExist, loadIssueReferences } from './github';
+import { getInput, info, setFailed, setOutput } from "@actions/core";
+import { addLabels, ensureLabelsExist, loadIssueReferences } from "./github";
+import gitCommits, { extractIssueIds, uniqueFilter } from "./utils";
 
 const run = async () => {
   try {
-    const from = getInput('from');
-    const to = getInput('to');
-    const color = getInput('color');
-    const labels = getInput('labels')
-      .split(',')
+    const from = getInput("from");
+    const to = getInput("to");
+    const color = getInput("color");
+    const labels = getInput("labels")
+      .split(",")
       .map((label) => label.trim())
       .filter((label) => label.length > 0)
       .filter(uniqueFilter);
@@ -29,12 +29,12 @@ const run = async () => {
     // add labels to all issues and prs
     info(
       `Adding labels "${labels.join(
-        '", "'
-      )}" to following issues and PRs: ${ids.join(', ')}`
+        '", "',
+      )}" to following issues and PRs: ${ids.join(", ")}`,
     );
     await addLabels(ids, labels);
 
-    setOutput('issues', JSON.stringify(ids));
+    setOutput("issues", JSON.stringify(ids));
   } catch (error) {
     if (error instanceof Error) {
       setFailed(error);
