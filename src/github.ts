@@ -92,7 +92,7 @@ export const ensureLabelsExist = async (
             owner,
             name,
           });
-        } catch (e) {
+        } catch (_e) {
           info(`Label "${name}" does not exist and will be created`);
 
           await octokit.issues.createLabel({
