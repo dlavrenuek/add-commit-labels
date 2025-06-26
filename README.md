@@ -27,7 +27,7 @@ steps:
     with:
       fetch-depth: 0
 
-  - uses: dlavrenuek/add-commit-labels@1.0.2
+  - uses: dlavrenuek/add-commit-labels@1.0.4
     with:
       # Commit SHA, tag or reference as starting point (excluded from history)
       from: 1.0.0
