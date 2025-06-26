@@ -36307,7 +36307,7 @@ var ensureLabelsExist = function (labels, color) { return __awaiter(void 0, void
         switch (_a.label) {
             case 0: return [4 /*yield*/, Promise.all(labels.map(function (name) {
                     return requestLimit(function () { return __awaiter(void 0, void 0, void 0, function () {
-                        var e_1;
+                        var _e_1;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -36321,7 +36321,7 @@ var ensureLabelsExist = function (labels, color) { return __awaiter(void 0, void
                                     _a.sent();
                                     return [3 /*break*/, 4];
                                 case 2:
-                                    e_1 = _a.sent();
+                                    _e_1 = _a.sent();
                                     (0, core_1.info)("Label \"".concat(name, "\" does not exist and will be created"));
                                     return [4 /*yield*/, octokit.issues.createLabel({
                                             repo: repo,
