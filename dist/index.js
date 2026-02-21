@@ -8593,7 +8593,7 @@ function onceStrict (fn) {
 
 /***/ }),
 
-/***/ 1153:
+/***/ 6335:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 "use strict";
@@ -9810,6 +9810,9 @@ var init_abort_plugin = __esm({
 function isConfigSwitch(arg) {
   return typeof arg === "string" && arg.trim().toLowerCase() === "-c";
 }
+function isCloneSwitch(char, arg) {
+  return Boolean(typeof arg === "string" && CLONE_OPTIONS.test(arg) && arg.includes(char));
+}
 function preventProtocolOverride(arg, next) {
   if (!isConfigSwitch(arg)) {
     return;
@@ -9831,7 +9834,7 @@ function preventUploadPack(arg, method) {
       `Use of --upload-pack or --receive-pack is not permitted without enabling allowUnsafePack`
     );
   }
-  if (method === "clone" && /^\s*-u\b/.test(arg)) {
+  if (method === "clone" && isCloneSwitch("u", arg)) {
     throw new GitPluginError(
       void 0,
       "unsafe",
@@ -9862,10 +9865,12 @@ function blockUnsafeOperationsPlugin({
     }
   };
 }
+var CLONE_OPTIONS;
 var init_block_unsafe_operations_plugin = __esm({
   "src/lib/plugins/block-unsafe-operations-plugin.ts"() {
     "use strict";
     init_git_plugin_error();
+    CLONE_OPTIONS = /^\0*(-|--|--no-)[\0\dlsqvnobucj]+/;
   }
 });
 
@@ -12975,7 +12980,7 @@ var require_git = __commonJS({
     var { GitExecutor: GitExecutor2 } = (init_git_executor(), __toCommonJS(git_executor_exports));
     var { SimpleGitApi: SimpleGitApi2 } = (init_simple_git_api(), __toCommonJS(simple_git_api_exports));
     var { Scheduler: Scheduler2 } = (init_scheduler(), __toCommonJS(scheduler_exports));
-    var { configurationErrorTask: configurationErrorTask2 } = (init_task(), __toCommonJS(task_exports));
+    var { adhocExecTask: adhocExecTask2, configurationErrorTask: configurationErrorTask2 } = (init_task(), __toCommonJS(task_exports));
     var {
       asArray: asArray2,
       filterArray: filterArray2,
@@ -13101,10 +13106,13 @@ var require_git = __commonJS({
       );
     };
     Git2.prototype.silent = function(silence) {
-      console.warn(
-        "simple-git deprecation notice: git.silent: logging should be configured using the `debug` library / `DEBUG` environment variable, this will be an error in version 3"
+      return this._runTask(
+        adhocExecTask2(
+          () => console.warn(
+            "simple-git deprecation notice: git.silent: logging should be configured using the `debug` library / `DEBUG` environment variable, this method will be removed."
+          )
+        )
       );
-      return this;
     };
     Git2.prototype.tags = function(options, then) {
       return this._runTask(
@@ -13330,7 +13338,13 @@ var require_git = __commonJS({
       return this._runTask(task);
     };
     Git2.prototype.clearQueue = function() {
-      return this;
+      return this._runTask(
+        adhocExecTask2(
+          () => console.warn(
+            "simple-git deprecation notice: clearQueue() is deprecated and will be removed, switch to using the abortPlugin instead."
+          )
+        )
+      );
     };
     Git2.prototype.checkIgnore = function(pathnames, then) {
       return this._runTask(
@@ -36561,7 +36575,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.extractIssueIds = exports.uniqueFilter = void 0;
 exports["default"] = gitCommits;
-var simple_git_1 = __importDefault(__nccwpck_require__(1153));
+var simple_git_1 = __importDefault(__nccwpck_require__(6335));
 var git = (0, simple_git_1.default)();
 var uniqueFilter = function (value, index, self) {
     return self.indexOf(value) === index;
