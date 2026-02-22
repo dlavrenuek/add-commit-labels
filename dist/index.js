@@ -8593,7 +8593,7 @@ function onceStrict (fn) {
 
 /***/ }),
 
-/***/ 6335:
+/***/ 1182:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 "use strict";
@@ -9870,7 +9870,7 @@ var init_block_unsafe_operations_plugin = __esm({
   "src/lib/plugins/block-unsafe-operations-plugin.ts"() {
     "use strict";
     init_git_plugin_error();
-    CLONE_OPTIONS = /^\0*(-|--|--no-)[\0\dlsqvnobucj]+/;
+    CLONE_OPTIONS = /^\0*(-|--|--no-)[\0\dlsqvnobucj]+\b/;
   }
 });
 
@@ -36575,7 +36575,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.extractIssueIds = exports.uniqueFilter = void 0;
 exports["default"] = gitCommits;
-var simple_git_1 = __importDefault(__nccwpck_require__(6335));
+var simple_git_1 = __importDefault(__nccwpck_require__(1182));
 var git = (0, simple_git_1.default)();
 var uniqueFilter = function (value, index, self) {
     return self.indexOf(value) === index;
