@@ -8593,7 +8593,7 @@ function onceStrict (fn) {
 
 /***/ }),
 
-/***/ 5957:
+/***/ 3060:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 "use strict";
@@ -9821,7 +9821,7 @@ function preventProtocolOverride(arg, next) {
   if (!isConfigSwitch(arg)) {
     return;
   }
-  if (!/^\s*protocol(.[a-z]+)?.allow/.test(next)) {
+  if (!/^\s*protocol(.[a-z]+)?.allow/i.test(next)) {
     return;
   }
   throw new GitPluginError(
@@ -36577,7 +36577,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.extractIssueIds = exports.uniqueFilter = void 0;
 exports["default"] = gitCommits;
-var simple_git_1 = __importDefault(__nccwpck_require__(5957));
+var simple_git_1 = __importDefault(__nccwpck_require__(3060));
 var git = (0, simple_git_1.default)();
 var uniqueFilter = function (value, index, self) {
     return self.indexOf(value) === index;
