@@ -33,7 +33,7 @@
     "simple-git": "3.36.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.2",
+    "@biomejs/biome": "2.5.3",
     "@types/jest": "30.0.0",
     "@vercel/ncc": "0.44.1",
     "jest": "30.4.2",
