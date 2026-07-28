@@ -28,7 +28,7 @@ jobs:
         run: pnpm build
 
       - name: Commit and push changes
-        uses: actions-js/push@v1.5
+        uses: actions-js/push@v1.6
         with:
           author_email: 20122620+dlavrenuek@users.noreply.github.com
           author_name: Dimitri Lavrenük
